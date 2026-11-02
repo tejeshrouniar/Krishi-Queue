@@ -8,6 +8,7 @@ A Flutter farmer-assistance app focused on Chhattisgarh, with Hindi/English acce
 - Hindi/English home, login, help, settings, visit planner and assistance screens; larger text and low-data defaults.
 - Saved personal visit plans, preparation checklists, copyable summaries and owner-scoped deletion. These are preparation notes, never official reservations.
 - Offline help for registration, weighing, payment tracing, complaints, fraud and finding agricultural experts.
+- A private offline follow-up notebook for payment, weighing, token and registration issues: evidence checklists, dated updates, your own follow-up date and a copyable summary. It does not submit a complaint or send reminders to an office. No phone alarms are scheduled.
 - A deterministic offline chat helper; it does not invent live prices, queues or payment status.
 - Clearly labelled practice booking, queue, procurement, staff and payment workflows.
 - Browser light version: about 23 KB of HTML, CSS, JavaScript and service worker before compression. It saves a plan/checklist in that browser, supports print/PDF, and can reopen offline after successful initial caching. It does not sync with Flutter's saved plans.
@@ -49,6 +50,8 @@ No provider keys should be embedded in Dart defines. The old direct-provider key
 The gateway requires Firebase authentication, explicit allowed web origins and server secrets; deployment may require a paid Firebase plan. Offline help and plans have no provider usage cost. No cloud deployment was performed. BHASHINI currently implements Hindi/English text translation, not voice or reviewed Chhattisgarhi translation.
 
 Prices/news load saved reports first and refresh on request. They keep observation/retrieval dates visible and report failed refreshes. News images are disabled by default. Online chat/translation asks before sending text and omits booking identifiers and conversation history.
+
+Online errors distinguish missing service configuration, sign-in, usage limits and connection problems. Personal follow-up notes never enter online chat or translation automatically. They are stored separately for the current account or guest and can be deleted without removing visit plans.
 
 ## Browser verification
 

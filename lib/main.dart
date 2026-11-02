@@ -11,6 +11,8 @@ import 'core/widgets/practice_banner.dart';
 import 'features/auth/data/auth_service.dart';
 import 'features/visit/data/visit_plan_store.dart';
 import 'features/visit/presentation/visit_planner_screen.dart';
+import 'features/issues/data/issue_notebook_store.dart';
+import 'features/issues/presentation/issue_notebook_screen.dart';
 
 import 'features/auth/domain/user_role.dart';
 import 'features/auth/presentation/login_screen.dart';
@@ -105,6 +107,7 @@ class _AuthGateState extends State<AuthGate> {
   AuthService? _authService;
   int _sessionGeneration = 0;
   final Map<String, VisitPlanStore> _visitStores = {};
+  final Map<String, IssueNotebookStore> _issueStores = {};
 
   late BookingRepository _bookingRepository;
   late final MarketPriceRepositoryImpl _marketPriceRepository;
@@ -152,6 +155,24 @@ class _AuthGateState extends State<AuthGate> {
         ? 'guest'
         : (_authService?.auth.currentUser?.uid ?? 'guest');
     return _visitStores.putIfAbsent(owner, () => VisitPlanStore(owner: owner));
+  }
+
+  IssueNotebookStore get _issueStore {
+    final owner = _guest
+        ? 'guest'
+        : (_authService?.auth.currentUser?.uid ?? 'guest');
+    return _issueStores.putIfAbsent(
+      owner,
+      () => IssueNotebookStore(owner: owner),
+    );
+  }
+
+  void _openIssues() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => IssueNotebookScreen(store: _issueStore),
+      ),
+    );
   }
 
   void _continueOffline() => setState(() {
@@ -312,6 +333,9 @@ class _AuthGateState extends State<AuthGate> {
           ),
           onLogout: _logout,
           onPlanVisit: _openPlan,
+          onIssuesTap: _openIssues,
+          issueStore: _issueStore,
+          onClearIssueNotes: () => _issueStore.clear(),
           onClearLocalData: () => _planStore.clear(),
         );
 

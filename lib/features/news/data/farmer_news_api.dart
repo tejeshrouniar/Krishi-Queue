@@ -12,6 +12,7 @@ class FarmerNewsApi {
   bool fromCache = false;
   bool saveFailed = false;
   String? refreshError;
+  GatewayException? refreshFailure;
 
   Future<List<NewsArticle>> fetchLatest({bool refresh = false}) async {
     final saved = await _cache.read('farmer_news');
@@ -26,6 +27,7 @@ class FarmerNewsApi {
       return [];
     }
     refreshError = null;
+    refreshFailure = null;
     try {
       final data = await _gateway.post('news', {});
       final records = data['results'];
@@ -46,6 +48,7 @@ class FarmerNewsApi {
       return articles;
     } catch (error) {
       refreshError = error.toString();
+      refreshFailure = error is GatewayException ? error : null;
       if (saved != null) {
         lastFetchedAt = saved.savedAt;
         fromCache = true;

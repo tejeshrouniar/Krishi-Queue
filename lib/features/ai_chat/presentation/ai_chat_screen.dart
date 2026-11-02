@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/settings/app_preferences.dart';
+import '../../../core/network/krishi_gateway.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../booking/domain/booking_repository.dart';
 import '../../market/data/market_price_repository.dart';
@@ -154,13 +155,15 @@ class _AiChatScreenState extends State<AiChatScreen> {
         );
       });
       _scrollToBottom();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(
-        () => _notice = p.text(
-          'Could not connect to online help. Sign in and try again when the connection improves. Your offline answer is kept.',
-          'ऑनलाइन मदद से संपर्क नहीं हुआ। साइन-इन करके बेहतर नेटवर्क पर दोबारा कोशिश करें। ऑफलाइन उत्तर सुरक्षित है।',
-        ),
+        () => _notice = error is GatewayException
+            ? error.localizedMessage(hindi: p.hindi)
+            : p.text(
+                'Could not connect to online help. Sign in and try again when the connection improves. Your offline answer is kept.',
+                'ऑनलाइन मदद से संपर्क नहीं हुआ। साइन-इन करके बेहतर नेटवर्क पर दोबारा कोशिश करें। ऑफलाइन उत्तर सुरक्षित है।',
+              ),
       );
     } finally {
       if (mounted) setState(() => _sending = false);

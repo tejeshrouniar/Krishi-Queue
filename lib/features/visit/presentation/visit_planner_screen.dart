@@ -481,213 +481,223 @@ class _VisitEditorState extends State<_VisitEditor> {
             constraints: const BoxConstraints(maxWidth: 720),
             child: Form(
               key: _form,
-              child: ListView(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
-                children: [
-                  _Notice(
-                    text: p.text(
-                      'Works without internet. Your checklist is a reminder, not official verification.',
-                      'बिना इंटरनेट चलता है। यह तैयारी की सूची है, सरकारी सत्यापन नहीं।',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _centre,
-                    enabled: !_busy,
-                    maxLength: 120,
-                    decoration: InputDecoration(
-                      labelText: p.text(
-                        'Your registered society / centre',
-                        'आपकी पंजीकृत समिति / केंद्र',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Notice(
+                      text: p.text(
+                        'Works without internet. Your checklist is a reminder, not official verification.',
+                        'बिना इंटरनेट चलता है। यह तैयारी की सूची है, सरकारी सत्यापन नहीं।',
                       ),
                     ),
-                    validator: (value) => value == null || value.trim().isEmpty
-                        ? p.text('Enter the centre name', 'केंद्र का नाम लिखें')
-                        : null,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  TextFormField(
-                    controller: _village,
-                    enabled: !_busy,
-                    maxLength: 100,
-                    decoration: InputDecoration(
-                      labelText: p.text(
-                        'Village / district (optional)',
-                        'गाँव / जिला (वैकल्पिक)',
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _centre,
+                      enabled: !_busy,
+                      maxLength: 120,
+                      decoration: InputDecoration(
+                        labelText: p.text(
+                          'Your registered society / centre',
+                          'आपकी पंजीकृत समिति / केंद्र',
+                        ),
                       ),
-                    ),
-                    textInputAction: TextInputAction.next,
-                  ),
-                  DropdownButtonFormField<String>(
-                    initialValue: _crop,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: p.text('Crop', 'फसल'),
-                    ),
-                    items: [
-                      if (!const ['Paddy', 'Maize', 'Other'].contains(_crop))
-                        DropdownMenuItem(value: _crop, child: Text(_crop)),
-                      DropdownMenuItem(
-                        value: 'Paddy',
-                        child: Text(p.text('Paddy', 'धान')),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Maize',
-                        child: Text(p.text('Maize', 'मक्का')),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Other',
-                        child: Text(p.text('Other', 'अन्य')),
-                      ),
-                    ],
-                    onChanged: _busy
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              setState(() {
-                                _crop = value;
-                                _dirty = true;
-                              });
-                            }
-                          },
-                  ),
-                  const SizedBox(height: 18),
-                  TextFormField(
-                    controller: _quantity,
-                    enabled: !_busy,
-                    maxLength: 8,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: p.text(
-                        'Quantity in quintals',
-                        'मात्रा क्विंटल में',
-                      ),
-                      helperText: p.text(
-                        '1 quintal = 100 kg. Eligibility is checked by your society.',
-                        '1 क्विंटल = 100 किलो। पात्रता समिति जाँचती है।',
-                      ),
-                      helperMaxLines: 3,
-                      errorMaxLines: 3,
-                    ),
-                    validator: (value) {
-                      final n = _parseQuantity(value ?? '');
-                      return n == null || !n.isFinite || n <= 0 || n > 10000
+                      validator: (value) =>
+                          value == null || value.trim().isEmpty
                           ? p.text(
-                              'Enter a valid quantity, above 0 and up to 10,000',
-                              '0 से अधिक और 10,000 तक सही मात्रा लिखें',
+                              'Enter the centre name',
+                              'केंद्र का नाम लिखें',
                             )
-                          : null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _busy
-                        ? null
-                        : () async {
-                            final now = DateUtils.dateOnly(DateTime.now());
-                            final last = now.add(const Duration(days: 365));
-                            final initial = _day.isBefore(now)
-                                ? now
-                                : _day.isAfter(last)
-                                ? last
-                                : _day;
-                            final selected = await showDatePicker(
-                              context: context,
-                              initialDate: initial,
-                              firstDate: now,
-                              lastDate: last,
-                            );
-                            if (selected != null && mounted) {
-                              setState(() {
-                                _day = selected;
-                                _dirty = true;
-                              });
-                            }
-                          },
-                    icon: const Icon(Icons.calendar_today_outlined),
-                    label: Text(
-                      '${p.text('Planned date', 'सोची गई तारीख')}: ${_date(_day)}',
+                          : null,
+                      textInputAction: TextInputAction.next,
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  TextFormField(
-                    controller: _reference,
-                    enabled: !_busy,
-                    maxLength: 80,
-                    decoration: InputDecoration(
-                      labelText: p.text(
-                        'Official token reference (optional)',
-                        'आधिकारिक टोकन संदर्भ (वैकल्पिक)',
+                    TextFormField(
+                      controller: _village,
+                      enabled: !_busy,
+                      maxLength: 100,
+                      decoration: InputDecoration(
+                        labelText: p.text(
+                          'Village / district (optional)',
+                          'गाँव / जिला (वैकल्पिक)',
+                        ),
                       ),
-                      helperText: p.text(
-                        'Copy from your official slip. We cannot verify it.',
-                        'आधिकारिक पर्ची से लिखें। हम इसका सत्यापन नहीं कर सकते।',
-                      ),
-                      helperMaxLines: 3,
+                      textInputAction: TextInputAction.next,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    p.text('Before leaving home', 'घर से निकलने से पहले'),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  for (final item in _items)
-                    CheckboxListTile(
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      title: Text(p.text(item.$2, item.$3)),
-                      value: _checks.contains(item.$1),
+                    DropdownButtonFormField<String>(
+                      initialValue: _crop,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: p.text('Crop', 'फसल'),
+                      ),
+                      items: [
+                        if (!const ['Paddy', 'Maize', 'Other'].contains(_crop))
+                          DropdownMenuItem(value: _crop, child: Text(_crop)),
+                        DropdownMenuItem(
+                          value: 'Paddy',
+                          child: Text(p.text('Paddy', 'धान')),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Maize',
+                          child: Text(p.text('Maize', 'मक्का')),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Other',
+                          child: Text(p.text('Other', 'अन्य')),
+                        ),
+                      ],
                       onChanged: _busy
                           ? null
-                          : (value) => setState(() {
-                              value == true
-                                  ? _checks.add(item.$1)
-                                  : _checks.remove(item.$1);
-                              _dirty = true;
-                            }),
+                          : (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _crop = value;
+                                  _dirty = true;
+                                });
+                              }
+                            },
                     ),
-                  const SizedBox(height: 18),
-                  TextFormField(
-                    controller: _notes,
-                    enabled: !_busy,
-                    maxLength: 500,
-                    minLines: 2,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      labelText: p.text('Notes (optional)', 'नोट (वैकल्पिक)'),
-                      helperText: p.text(
-                        'Do not enter bank details, Aadhaar, PIN or OTP.',
-                        'बैंक विवरण, आधार, पिन या OTP न लिखें।',
+                    const SizedBox(height: 18),
+                    TextFormField(
+                      controller: _quantity,
+                      enabled: !_busy,
+                      maxLength: 8,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
-                      helperMaxLines: 2,
+                      decoration: InputDecoration(
+                        labelText: p.text(
+                          'Quantity in quintals',
+                          'मात्रा क्विंटल में',
+                        ),
+                        helperText: p.text(
+                          '1 quintal = 100 kg. Eligibility is checked by your society.',
+                          '1 क्विंटल = 100 किलो। पात्रता समिति जाँचती है।',
+                        ),
+                        helperMaxLines: 3,
+                        errorMaxLines: 3,
+                      ),
+                      validator: (value) {
+                        final n = _parseQuantity(value ?? '');
+                        return n == null || !n.isFinite || n <= 0 || n > 10000
+                            ? p.text(
+                                'Enter a valid quantity, above 0 and up to 10,000',
+                                '0 से अधिक और 10,000 तक सही मात्रा लिखें',
+                              )
+                            : null;
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _save,
-                    icon: const Icon(Icons.save_outlined),
-                    label: Text(
-                      _busy
-                          ? p.text('Saving…', 'सहेज रहे हैं…')
-                          : p.text('Save on this device', 'इस फ़ोन पर सहेजें'),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: _busy ? null : _copy,
-                    icon: const Icon(Icons.copy_outlined),
-                    label: Text(
-                      p.text(
-                        'Copy a checklist for sharing / paper',
-                        'संदेश / कागज़ के लिए सूची कॉपी करें',
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _busy
+                          ? null
+                          : () async {
+                              final now = DateUtils.dateOnly(DateTime.now());
+                              final last = now.add(const Duration(days: 365));
+                              final initial = _day.isBefore(now)
+                                  ? now
+                                  : _day.isAfter(last)
+                                  ? last
+                                  : _day;
+                              final selected = await showDatePicker(
+                                context: context,
+                                initialDate: initial,
+                                firstDate: now,
+                                lastDate: last,
+                              );
+                              if (selected != null && mounted) {
+                                setState(() {
+                                  _day = selected;
+                                  _dirty = true;
+                                });
+                              }
+                            },
+                      icon: const Icon(Icons.calendar_today_outlined),
+                      label: Text(
+                        '${p.text('Planned date', 'सोची गई तारीख')}: ${_date(_day)}',
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 18),
+                    TextFormField(
+                      controller: _reference,
+                      enabled: !_busy,
+                      maxLength: 80,
+                      decoration: InputDecoration(
+                        labelText: p.text(
+                          'Official token reference (optional)',
+                          'आधिकारिक टोकन संदर्भ (वैकल्पिक)',
+                        ),
+                        helperText: p.text(
+                          'Copy from your official slip. We cannot verify it.',
+                          'आधिकारिक पर्ची से लिखें। हम इसका सत्यापन नहीं कर सकते।',
+                        ),
+                        helperMaxLines: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      p.text('Before leaving home', 'घर से निकलने से पहले'),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    for (final item in _items)
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: Text(p.text(item.$2, item.$3)),
+                        value: _checks.contains(item.$1),
+                        onChanged: _busy
+                            ? null
+                            : (value) => setState(() {
+                                value == true
+                                    ? _checks.add(item.$1)
+                                    : _checks.remove(item.$1);
+                                _dirty = true;
+                              }),
+                      ),
+                    const SizedBox(height: 18),
+                    TextFormField(
+                      controller: _notes,
+                      enabled: !_busy,
+                      maxLength: 500,
+                      minLines: 2,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        labelText: p.text('Notes (optional)', 'नोट (वैकल्पिक)'),
+                        helperText: p.text(
+                          'Do not enter bank details, Aadhaar, PIN or OTP.',
+                          'बैंक विवरण, आधार, पिन या OTP न लिखें।',
+                        ),
+                        helperMaxLines: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: _busy ? null : _save,
+                      icon: const Icon(Icons.save_outlined),
+                      label: Text(
+                        _busy
+                            ? p.text('Saving…', 'सहेज रहे हैं…')
+                            : p.text(
+                                'Save on this device',
+                                'इस फ़ोन पर सहेजें',
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: _busy ? null : _copy,
+                      icon: const Icon(Icons.copy_outlined),
+                      label: Text(
+                        p.text(
+                          'Copy a checklist for sharing / paper',
+                          'संदेश / कागज़ के लिए सूची कॉपी करें',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),

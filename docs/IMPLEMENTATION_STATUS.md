@@ -1,4 +1,4 @@
-# Implementation status — 1 November 2026
+# Implementation status — 2 November 2026
 
 Krishi Queue now has a useful offline farmer-assistance layer. It is still a prototype for official procurement operations: no government reservation, eligibility decision, weighbridge measurement or bank transfer is performed by this app.
 
@@ -13,6 +13,7 @@ Krishi Queue now has a useful offline farmer-assistance layer. It is still a pro
 | Shared phones | Farmer/guest-scoped storage, clear-plan confirmation, explicit sign-out and no stored chat transcript | Device plans are local convenience records, not encrypted official evidence or a cloud backup |
 | Immediate help | Offline Hindi/English answers about preparation, tokens, payment delays, weighing, fraud and expert referrals | Deterministic topic matching, not live AI, crop diagnosis or official status |
 | Human and official assistance | Searchable guides, official links, call buttons and complaint evidence instructions | No automatic complaint submission, centre phone directory or staffed support desk |
+| Personal follow-ups | Offline problem notebook, evidence checklist, dated history, farmer-entered official reference, open/resolved filters, due dates on home, copyable summary and owner-scoped deletion | Personal notes only: no filing, official verification, phone alarm or notification to an office; up to 30 notes and 30 history entries per note |
 | Sign-in | Google and phone OTP code, Hindi digits, resend cooldown, bounded waits, session restoration and claims-based operator roles | Google OAuth clients, fingerprints, allowed domains and live providers require project setup/testing |
 | BHASHINI | Consented Hindi/English text translation through a Firebase-authenticated server gateway | Credentials, production access and deployed endpoint are required; voice is not implemented |
 | Market/news information | Chhattisgarh price filter, report dates, cached fallback, manual updates, safe article links and honest storage errors | Live providers are not connected in the default build; reports are not MSP or guaranteed purchase offers |
@@ -29,14 +30,17 @@ Krishi Queue now has a useful offline farmer-assistance layer. It is still a pro
 - Editing is blocked while a save is pending; clipboard failures do not lose the form. Stored crop/date values and Hindi quantity input are handled safely.
 - Small-screen and large-text dialog overflows were fixed. News tabs mount only when opened, and shared HTTP clients are disposed.
 - Secrets and private booking/payment context no longer go directly from the client to model providers. Online requests are bounded and quota limited; public helplines can be translated while personal-number patterns are rejected.
+- Online failures now distinguish missing setup, sign-in requirements, rejected input, usage limits and network problems in Hindi/English. Cached news keeps its saved date visible after a failed refresh.
+- The follow-up notebook preserves edits on failed writes, freezes input while saving, keeps account/guest stores separate, handles denied clipboard access and preserves a full history when a farmer marks a note resolved. Deletion is explicitly separate from official complaint withdrawal and visit-plan deletion.
 
 ## Verification
 
 - Flutter analysis: no issues on the checked combined source.
-- All 61 automated Flutter tests pass, covering authentication/roles, booking/queue invariants, draft persistence and failed writes, local help, cache/parser failures, lazy downloads, self-arranged transport and 320px screens with doubled text.
+- All 78 automated Flutter tests pass, covering authentication/roles, booking/queue invariants, draft persistence and failed writes, local help, cache/parser failures, lazy downloads, self-arranged transport, personal follow-up history/isolation/deletion and 320px screens with doubled text.
 - Seven Node tests cover gateway request validation, BHASHINI config/compute and callback restrictions, provider failure and privacy boundaries. Provider responses are mocked.
 - Release web build, Android debug APK and optimised Android ARM packages compile successfully. The split packages are about 18 MB for 32-bit ARM and 20 MB for ARM64, compared with the larger universal debug build. They use the repository's existing test signing configuration; even files named `release.apk` are not production-signed store releases.
 - Browser check passed at simulated 64 kbit/s download throughput and 800 ms latency. It verified offline reload, persisted plan/checklist, offline answers, deletion, no automatic Flutter download on the landing page, and 320px/2x layout. Login and guest home screenshots were inspected.
+- The full Flutter browser flow was also tested as a guest with networking disabled: enter a personal follow-up and a visit plan, scroll each focused form and save to device storage. This caught and fixed text loss in lazily mounted editors; both forms now keep their fields attached while scrolling. Notebook and saved-note screenshots were inspected.
 
 Simulation is not a rural field test. Physical low-cost Android phones, intermittent mobile networks, real OTP delivery, live Google configuration, revoked roles, deployed quotas/rules and actual BHASHINI credentials still need verification.
 

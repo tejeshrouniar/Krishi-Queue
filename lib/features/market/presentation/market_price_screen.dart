@@ -154,10 +154,14 @@ class _MarketPriceScreenState extends State<MarketPriceScreen> {
                         child: Semantics(
                           liveRegion: true,
                           child: Text(
-                            p.text(
-                              'Update unavailable. Saved reports may be old. Try again later.',
-                              'नई जानकारी नहीं मिली। सहेजी रिपोर्ट पुरानी हो सकती है। बाद में कोशिश करें।',
-                            ),
+                            (repository is MarketPriceRepositoryImpl
+                                    ? repository.refreshFailure
+                                          ?.localizedMessage(hindi: p.hindi)
+                                    : null) ??
+                                p.text(
+                                  'Update unavailable. Saved reports may be old. Try again later.',
+                                  'नई जानकारी नहीं मिली। सहेजी रिपोर्ट पुरानी हो सकती है। बाद में कोशिश करें।',
+                                ),
                             style: const TextStyle(
                               color: AppTheme.darkGreen,
                               fontWeight: FontWeight.w700,

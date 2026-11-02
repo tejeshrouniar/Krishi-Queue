@@ -137,7 +137,7 @@ Krishi Queue's light browser shell was tested at simulated 64 kbit/s and consist
 | BHASHINI and online help | Authenticated gateway implementation and consent-based text-translation flow | Provider credentials, authorised production access, deployment and live tests; voice is not implemented |
 | Prices/news | Source-specific parsing, dates, manual refresh and cached reports | Configured/deployed provider gateway; independent verification of the newest records |
 | Government procurement | Clearly marked practice workflow and invalid-for-procurement sample QR | An authorised partner, real verification, official tokens, capacity, weighing, receipts and payment integration |
-| Cases and support | Practical guidance on evidence and where to seek help | Staffed operation, real case submission, ownership, escalation, service levels and audit |
+| Cases and support | Practical guidance plus a private offline follow-up notebook with evidence checklist, dated updates, personal follow-up date and copyable summary | Staffed operation, real case submission, ownership, escalation, service levels and audit; a saved personal note does not file a complaint |
 
 Nothing has been deployed to government systems. Offline personal notes are not an official reservation, a cloud backup or a promise that an action will sync later.
 

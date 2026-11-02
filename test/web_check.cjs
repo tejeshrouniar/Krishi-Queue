@@ -23,6 +23,7 @@ const server = http.createServer(async (request, response) => {
   const browser = await chromium.launch({headless: true});
   try {
     await fs.mkdir('test-results', {recursive: true});
+    if (process.env.KRISHI_ONLY_FULL !== '1') {
     const context = await browser.newContext({viewport: {width: 375, height: 812}});
     const page = await context.newPage();
     const errors = [];
@@ -66,6 +67,7 @@ const server = http.createServer(async (request, response) => {
     assert(bytes < 50000, 'Light assets must remain under 50 KB uncompressed');
     console.log(`PASS: simulated 64 kbit/s download, offline reload, saved plan/checklist, local help, delete, 320px/2x layout; light assets ${bytes} bytes; no page errors.`);
     await context.close();
+    }
     if (process.env.KRISHI_CHECK_FULL === '1') {
       const full = await browser.newContext({viewport: {width: 390, height: 844}});
       const app = await full.newPage();
@@ -80,6 +82,45 @@ const server = http.createServer(async (request, response) => {
       await app.getByRole('button', {name: 'बिना साइन इन किए आगे बढ़ें', exact: true}).click({timeout: 15000});
       await app.waitForTimeout(700);
       await app.screenshot({path: 'test-results/farmer-home-mobile.png'});
+      await app.getByRole('button', {name: 'English', exact: true}).click();
+      await app.mouse.wheel(0, 550);
+      await app.waitForTimeout(400);
+      await app.getByRole('button', {name: /My follow-ups/}).click();
+      await app.getByRole('button', {name: 'Record a problem', exact: true}).waitFor();
+      await app.screenshot({path: 'test-results/follow-up-notebook-mobile.png'});
+      await full.setOffline(true);
+      await app.getByRole('button', {name: 'Record a problem', exact: true}).click();
+      await app.getByRole('textbox', {name: /Centre \/ office/}).click();
+      await app.waitForTimeout(250);
+      await app.keyboard.type('Offline test society', {delay: 10});
+      await app.getByRole('textbox', {name: /What happened/}).click();
+      await app.waitForTimeout(250);
+      await app.keyboard.type('Asked for a payment update', {delay: 10});
+      await app.waitForTimeout(250);
+      await app.mouse.wheel(0, 1700);
+      await app.waitForTimeout(400);
+      await app.getByRole('button', {name: 'Save personal note', exact: true}).click();
+      await app.waitForTimeout(800);
+      await app.screenshot({path: 'test-results/follow-up-after-save.png'});
+      await app.getByRole('button', {name: /Offline test society/}).waitFor();
+      await app.screenshot({path: 'test-results/follow-up-saved-mobile.png'});
+      console.log('PASS: full app entered as guest and saved a follow-up note while offline.');
+      await app.getByRole('button', {name: 'Back', exact: true}).click();
+      await app.mouse.wheel(0, -1800);
+      await app.waitForTimeout(400);
+      await app.getByRole('button', {name: 'Plan my visit', exact: true}).click();
+      await app.getByRole('button', {name: 'Prepare a visit', exact: true}).click();
+      await app.getByRole('textbox', {name: /Your registered society/}).click();
+      await app.waitForTimeout(250);
+      await app.keyboard.type('Offline visit society', {delay: 10});
+      await app.getByRole('textbox', {name: /Quantity in quintals/}).click();
+      await app.waitForTimeout(250);
+      await app.keyboard.type('12.5', {delay: 10});
+      await app.mouse.wheel(0, 1800);
+      await app.waitForTimeout(400);
+      await app.getByRole('button', {name: 'Save on this device', exact: true}).click();
+      await app.getByRole('button', {name: /Offline visit society/}).waitFor();
+      console.log('PASS: full app visit plan also saves offline after scrolling the focused quantity field.');
       console.log('Full Flutter app rendered; screenshot saved for visual inspection.');
       await full.close();
     }

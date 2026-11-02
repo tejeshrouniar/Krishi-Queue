@@ -9,6 +9,7 @@ import '../../booking/domain/booking_status.dart';
 import '../../booking/presentation/bookings_screen.dart';
 import '../../help/presentation/help_screen.dart';
 import '../../help/presentation/settings_screen.dart';
+import '../../issues/data/issue_notebook_store.dart';
 
 class HomeScreen extends StatefulWidget {
   final BookingRepository repository;
@@ -18,6 +19,9 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback? onMarketPriceTap;
   final VoidCallback? onPaymentTap;
   final VoidCallback? onPlanVisit;
+  final VoidCallback? onIssuesTap;
+  final IssueNotebookStore? issueStore;
+  final Future<void> Function()? onClearIssueNotes;
   final VoidCallback? onLogout;
   final Future<void> Function()? onClearLocalData;
   final Widget? newsScreen;
@@ -32,6 +36,9 @@ class HomeScreen extends StatefulWidget {
     this.onMarketPriceTap,
     this.onPaymentTap,
     this.onPlanVisit,
+    this.onIssuesTap,
+    this.issueStore,
+    this.onClearIssueNotes,
     this.onLogout,
     this.onClearLocalData,
     this.newsScreen,
@@ -50,6 +57,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _loadFailed = false;
   bool _wasCurrent = false;
   int _loadGeneration = 0;
+  int _issueGeneration = 0;
+  int? _followUpsDue;
 
   @override
   void initState() {
@@ -83,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadBooking() async {
+    _loadIssues();
     final generation = ++_loadGeneration;
     try {
       final booking = await widget.repository.getBooking();
@@ -101,6 +111,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _loadIssues() async {
+    final generation = ++_issueGeneration;
+    try {
+      final issues = await widget.issueStore?.load();
+      if (mounted && generation == _issueGeneration) {
+        setState(() {
+          _followUpsDue = issues
+              ?.where((issue) => issue.needsFollowUp(DateTime.now()))
+              .length;
+        });
+      }
+    } catch (_) {
+      if (mounted && generation == _issueGeneration) {
+        setState(() => _followUpsDue = null);
+      }
+    }
+  }
+
   void _selectTab(int index) {
     setState(() {
       _selectedIndex = index;
@@ -110,15 +138,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _openHelp() async {
-    await Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => const HelpScreen()));
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => HelpScreen(onOpenIssues: widget.onIssuesTap),
+      ),
+    );
   }
 
   Future<void> _openSettings() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            SettingsScreen(onClearLocalData: widget.onClearLocalData),
+        builder: (_) => SettingsScreen(
+          onClearLocalData: widget.onClearLocalData,
+          onClearIssueNotes: widget.onClearIssueNotes,
+        ),
       ),
     );
     if (mounted) _loadBooking();
@@ -235,6 +268,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       onTap: () => _selectTab(2),
                     ),
                     const SizedBox(height: 10),
+                    if (widget.onIssuesTap != null) ...[
+                      _actionCard(
+                        icon: Icons.assignment_outlined,
+                        title: p.text('My follow-ups', 'मेरे फॉलो-अप'),
+                        subtitle: _followUpsDue != null && _followUpsDue! > 0
+                            ? p.text(
+                                '$_followUpsDue personal follow-ups due · open notes',
+                                '$_followUpsDue फॉलो-अप की तारीख आ गई · नोट खोलें',
+                              )
+                            : p.text(
+                                'Keep problem notes, receipts checklist and next steps',
+                                'समस्या के नोट, रसीद की सूची और अगला कदम रखें',
+                              ),
+                        onTap: widget.onIssuesTap,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     _actionCard(
                       icon: Icons.currency_rupee,
                       title: p.text('Check mandi prices', 'मंडी के भाव देखें'),

@@ -55,6 +55,48 @@ Map<String, dynamic> validPrice() => {
 };
 
 void main() {
+  test('gateway errors distinguish setup, sign-in, limits and rejected text without exposing responses', () async {
+    final unconfigured = KrishiGateway(baseUrl: '');
+    await expectLater(
+      unconfigured.post('market', {}),
+      throwsA(
+        isA<GatewayException>().having(
+          (e) => e.kind,
+          'kind',
+          GatewayFailure.configuration,
+        ),
+      ),
+    );
+    for (final entry in {
+      400: GatewayFailure.input,
+      401: GatewayFailure.signIn,
+      403: GatewayFailure.access,
+      429: GatewayFailure.limit,
+      503: GatewayFailure.unavailable,
+    }.entries) {
+      final gateway = KrishiGateway(
+        baseUrl: 'https://example.test',
+        token: () async => 'token',
+        client: MockClient(
+          (_) async => http.Response('private provider details', entry.key),
+        ),
+      );
+      try {
+        await gateway.post('assistant', {'message': 'Help'});
+        fail('A failed response must not look successful');
+      } on GatewayException catch (error) {
+        expect(error.kind, entry.value);
+        expect(
+          error.localizedMessage(hindi: true),
+          isNot(contains('private provider')),
+        );
+        expect(error.localizedMessage(hindi: false), isNotEmpty);
+      } finally {
+        gateway.dispose();
+      }
+    }
+    unconfigured.dispose();
+  });
   test(
     'public cache handles corrupt storage and clears only its own keys',
     () async {

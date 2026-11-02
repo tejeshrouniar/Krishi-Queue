@@ -148,10 +148,11 @@ class _NewsScreenState extends State<NewsScreen> {
             const Icon(Icons.cloud_off_rounded, size: 46),
             const SizedBox(height: 14),
             Text(
-              p.text(
-                'News is unavailable. Sign in and try again when connected.',
-                'समाचार उपलब्ध नहीं हैं। साइन-इन करके इंटरनेट मिलने पर फिर कोशिश करें।',
-              ),
+              widget.api.refreshFailure?.localizedMessage(hindi: p.hindi) ??
+                  p.text(
+                    'News is unavailable. Sign in and try again when connected.',
+                    'समाचार उपलब्ध नहीं हैं। साइन-इन करके इंटरनेट मिलने पर फिर कोशिश करें।',
+                  ),
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
@@ -169,6 +170,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
   String _cacheStatus() {
     final p = AppPreferences.of(context);
+    final failure = widget.api.refreshFailure;
     final date = widget.api.lastFetchedAt;
     if (widget.api.saveFailed) {
       return p.text(
@@ -177,6 +179,7 @@ class _NewsScreenState extends State<NewsScreen> {
       );
     }
     if (date == null) {
+      if (failure != null) return failure.localizedMessage(hindi: p.hindi);
       return p.text(
         'No saved news yet. Tap refresh when connected. Articles open outside this app and use mobile data.',
         'अभी समाचार सहेजे नहीं गए। इंटरनेट मिलने पर रिफ्रेश करें। पूरी खबर ऐप के बाहर खुलेगी और डेटा लगेगा।',
@@ -186,6 +189,9 @@ class _NewsScreenState extends State<NewsScreen> {
       'Saved ${date.day}/${date.month}/${date.year}. Reports may be old; check the publication date.',
       '${date.day}/${date.month}/${date.year} को सहेजा। रिपोर्ट पुरानी हो सकती है; प्रकाशन तारीख देखें।',
     );
+    if (failure != null) {
+      return '${failure.localizedMessage(hindi: p.hindi)}\n$saved';
+    }
     return widget.api.refreshError == null
         ? saved
         : '${p.text('Could not update. ', 'अपडेट नहीं हुआ। ')}$saved';

@@ -6,7 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../data/farmer_guides.dart';
 
 class HelpScreen extends StatefulWidget {
-  const HelpScreen({super.key});
+  final VoidCallback? onOpenIssues;
+  const HelpScreen({super.key, this.onOpenIssues});
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
@@ -67,6 +68,10 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              if (widget.onOpenIssues != null) ...[
+                OutlinedButton.icon(onPressed: widget.onOpenIssues, icon: const Icon(Icons.assignment_outlined), label: Text(p.text('Open my personal follow-ups', 'मेरे व्यक्तिगत फॉलो-अप खोलें'))),
+                const SizedBox(height: 16),
+              ],
               TextField(
                 onChanged: (value) => setState(() => _query = value),
                 decoration: InputDecoration(

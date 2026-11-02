@@ -45,6 +45,7 @@ class KrishiGateway {
     if (!configured) {
       throw const GatewayException(
         'Online help is not connected yet. Saved help still works.',
+        kind: GatewayFailure.configuration,
       );
     }
     String? token;
@@ -58,6 +59,7 @@ class KrishiGateway {
     if (token == null) {
       throw const GatewayException(
         'Sign in to use this online service. Offline help is always available.',
+        kind: GatewayFailure.signIn,
       );
     }
     try {
@@ -77,11 +79,25 @@ class KrishiGateway {
       if (response.statusCode == 401) {
         throw const GatewayException(
           'Please sign in again to use online help.',
+          kind: GatewayFailure.signIn,
         );
       }
       if (response.statusCode == 429) {
         throw const GatewayException(
           'Online help is busy. Please try again later.',
+          kind: GatewayFailure.limit,
+        );
+      }
+      if (response.statusCode == 400) {
+        throw const GatewayException(
+          'Check the text before sending.',
+          kind: GatewayFailure.input,
+        );
+      }
+      if (response.statusCode == 403) {
+        throw const GatewayException(
+          'This service cannot be accessed from this app.',
+          kind: GatewayFailure.access,
         );
       }
       if (response.statusCode < 200 ||
@@ -99,6 +115,7 @@ class KrishiGateway {
     } catch (_) {
       throw const GatewayException(
         'Connection is slow or unavailable. Your saved information is still available.',
+        kind: GatewayFailure.connection,
       );
     }
   }
@@ -106,9 +123,57 @@ class KrishiGateway {
   void dispose() => _client.close();
 }
 
+enum GatewayFailure {
+  configuration,
+  signIn,
+  limit,
+  input,
+  access,
+  unavailable,
+  connection,
+}
+
 class GatewayException implements Exception {
   final String message;
-  const GatewayException(this.message);
+  final GatewayFailure kind;
+  const GatewayException(
+    this.message, {
+    this.kind = GatewayFailure.unavailable,
+  });
+  String localizedMessage({required bool hindi}) {
+    final pair = switch (kind) {
+      GatewayFailure.configuration => (
+        'Online services are not connected in this build. Saved help is available.',
+        'इस संस्करण में ऑनलाइन सेवाएँ जुड़ी नहीं हैं। सहेजी सहायता उपलब्ध है।',
+      ),
+      GatewayFailure.signIn => (
+        'Sign in to get new online information. Saved help remains available.',
+        'नई ऑनलाइन जानकारी के लिए साइन इन करें। सहेजी सहायता उपलब्ध है।',
+      ),
+      GatewayFailure.limit => (
+        'The online usage limit has been reached. Try later or use saved help.',
+        'ऑनलाइन उपयोग की सीमा पूरी हो गई है। बाद में कोशिश करें या सहेजी सहायता लें।',
+      ),
+      GatewayFailure.input => (
+        'Remove private numbers and email addresses, and keep the question short.',
+        'निजी नंबर और ईमेल हटाएँ और सवाल छोटा रखें।',
+      ),
+      GatewayFailure.access => (
+        'This online service needs app setup. Use saved help for now.',
+        'इस ऑनलाइन सेवा के लिए ऐप सेटअप चाहिए। अभी सहेजी सहायता लें।',
+      ),
+      GatewayFailure.unavailable => (
+        'The information service is unavailable. Saved reports may be old; try later.',
+        'जानकारी की सेवा उपलब्ध नहीं है। सहेजी रिपोर्ट पुरानी हो सकती है; बाद में कोशिश करें।',
+      ),
+      GatewayFailure.connection => (
+        'The connection is slow or unavailable. Your saved information is still here.',
+        'कनेक्शन धीमा है या उपलब्ध नहीं है। आपकी सहेजी जानकारी यहीं है।',
+      ),
+    };
+    return hindi ? pair.$2 : pair.$1;
+  }
+
   @override
   String toString() => message;
 }

@@ -101,6 +101,7 @@ class MarketPriceRepositoryImpl implements MarketPriceRepository {
   bool fromCache = false;
   bool saveFailed = false;
   String? refreshError;
+  GatewayException? refreshFailure;
 
   Future<List<MarketPrice>> getCachedPrices() async {
     final saved = await _cache.read('market_cg');
@@ -122,6 +123,7 @@ class MarketPriceRepositoryImpl implements MarketPriceRepository {
 
   Future<List<MarketPrice>> refreshMarketPrices() async {
     refreshError = null;
+    refreshFailure = null;
     try {
       final data = await _gateway.post('market', {});
       final records = data['records'];
@@ -144,6 +146,7 @@ class MarketPriceRepositoryImpl implements MarketPriceRepository {
       return prices;
     } catch (error) {
       refreshError = error.toString();
+      refreshFailure = error is GatewayException ? error : null;
       final saved = await getCachedPrices();
       if (saved.isNotEmpty) return saved;
       rethrow;

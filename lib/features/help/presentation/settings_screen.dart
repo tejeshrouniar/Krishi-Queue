@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../core/settings/app_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, this.onClearLocalData});
+  const SettingsScreen({
+    super.key,
+    this.onClearLocalData,
+    this.onClearIssueNotes,
+  });
+  final Future<void> Function()? onClearIssueNotes;
 
   /// The app owner clears the current account's (or guest's) saved visit plans.
   /// This screen must never clear Firebase credentials or all device storage.
@@ -15,6 +20,62 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _clearing = false;
+
+  Future<void> _clearIssues() async {
+    if (_clearing || widget.onClearIssueNotes == null) return;
+    final p = AppPreferences.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: Text(
+          p.text('Clear your follow-up notes?', 'अपने फॉलो-अप नोट हटाएँ?'),
+        ),
+        content: Text(
+          p.text(
+            'Remove all personal problem notes and their histories for this account or guest on this device. Keep a copy first. Other accounts and visit plans are kept. Official complaints are not affected.',
+            'इस फ़ोन पर मौजूदा खाते या अतिथि की समस्या के नोट और उनका इतिहास हटाएँ। पहले कॉपी रख लें। दूसरे खाते और यात्रा योजनाएँ रहेंगी। सरकारी शिकायतों पर असर नहीं होगा।',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(p.text('Keep notes', 'नोट रखें')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(p.text('Clear notes', 'नोट हटाएँ')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _clearing = true);
+    var success = false;
+    try {
+      await widget.onClearIssueNotes!();
+      success = true;
+    } catch (_) {
+      /* Keep confirmation truthful on storage failure. */
+    }
+    if (!mounted) return;
+    setState(() => _clearing = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? p.text(
+                  'Your personal follow-up notes were cleared.',
+                  'आपके व्यक्तिगत फॉलो-अप नोट हट गए।',
+                )
+              : p.text(
+                  'Could not clear notes. Please try again.',
+                  'नोट नहीं हटा सके। फिर कोशिश करें।',
+                ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _clear() async {
     if (_clearing || widget.onClearLocalData == null) return;
@@ -208,6 +269,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 p.text('Your information', 'आपकी जानकारी'),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
+              if (widget.onClearIssueNotes != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _clearing ? null : _clearIssues,
+                  icon: const Icon(Icons.delete_outline),
+                  label: Text(
+                    p.text(
+                      'Clear my follow-up notes',
+                      'अपने फॉलो-अप नोट हटाएँ',
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               Text(
                 p.text(
