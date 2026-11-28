@@ -78,4 +78,5 @@ npm run check
 
 ## Product and launch decisions
 
-The detailed farmer problems, adoption evidence, proposed solutions, connectivity design and potential developer revenue models are in [the Chhattisgarh research report](RESEARCH_CHHATTISGARH.md). Launch gaps and implementation evidence are recorded in [implementation status](docs/IMPLEMENTATION_STATUS.md). A real field pilot with farmers and procurement staff is still needed; automated tests cannot establish rural adoption or government acceptance.
+The detailed farmer problems, adoption evidence, proposed solutions, connectivity design and potential developer revenue models are in [the Chhattisgarh research report](RESEARCH_CHHATTISGARH.md). Launch gaps and implementation evidence are recorded in [implementation status](docs/IMPLEMENTATION_STATUS.md). A real field pilot with farmers and procurement staff is still needed; automated tests cannot establish rural adoption or government acceptance....
+abh
